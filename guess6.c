@@ -18,7 +18,7 @@
 #include "readline.h" // informs C about functions in readline.c file.
 
 /* function prototype *declaration*; the function is *defined* below */
-int askGuess(const int low, const int high);
+int askGuess(const int low, const int high, int tries);
 int pickAnswer(const int high);
 bool str2int(const char string[], int * number);
 
@@ -29,7 +29,8 @@ main(const int argc, const char * argv[])
   int answer; // the secret number to guess
   int guess;  // the user's guess
   int max;    // we'll pick a number in [1..max]
-
+  int tries=10;  // this is how many tries we have left. initializes at 10
+ 
   // interpret arguments
   if (argc == 1) {
     // no arguments (other than the command) - use default value
@@ -49,7 +50,7 @@ main(const int argc, const char * argv[])
   answer = pickAnswer(max);
 
   printf("I'm thinking of a number between 1-%d.\n", max);
-  guess = askGuess(1, max);
+  guess = askGuess(1, max, tries);
 
   while (guess != 0 && guess != answer) {
     if (guess < 0) {
@@ -59,7 +60,9 @@ main(const int argc, const char * argv[])
     } else {
       printf("too low!\n");
     }
-    guess = askGuess(1, max);
+    --tries;
+    printf("Attempts remaining: %d \n",tries);
+    guess = askGuess(1, max, tries);
   }
 
   if (guess == answer)
@@ -92,14 +95,17 @@ pickAnswer(const int high)
  * Handles many forms of input error.
  */
 int
-askGuess(const int low, const int high)
+askGuess(const int low, const int high, int tries)
 {
   const int bufsize = 20;     // the buffer size
   char inputLine[bufsize];    // the buffer for user input
   int guess;                  // user's guess
 
+  if (tries==0) {
+      printf("Sorry! You ran out of attempts.");
+      return 0;
   printf("Guess my number (between %d and %d, or 0 to give up): ", low, high);
-
+  }
   // use readLine() to read a whole line, or as much as fits into our buffer
   // if it returns false, the line was too long, or an EOF occurred. 
   if (!readLine(inputLine, bufsize)) {
